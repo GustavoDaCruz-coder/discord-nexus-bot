@@ -1,0 +1,14 @@
+#Comandos
+Prefix: '!'
+Comandos:
+  Conta: !conta
+    - criar: !conta criar
+    - listar: !conta listar
+    - desativar: !conta desativar
+    - atualziar: !conta atualizar
+  Servidor: !servidor
+    - iniciar: !servidor iniciar
+    - parar: !servidor parar
+    - reiniciar: !servidor reiniciar
+    - status: !servidor status
+    - lista: !servidor lista

@@ -1,5 +1,6 @@
 package com.gustavodev.nexus_bot.util;
 
+import java.awt.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;

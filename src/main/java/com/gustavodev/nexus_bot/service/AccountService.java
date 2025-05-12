@@ -18,6 +18,8 @@ import java.io.FileWriter;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
 import static com.gustavodev.nexus_bot.util.Constants.TITLE_ACCOUNT_MESSAGE;
 import static com.gustavodev.nexus_bot.util.StatusByRegistration.*;
@@ -92,7 +94,7 @@ public class AccountService {
                 account.setMfa(fullMessage.equalsIgnoreCase("Sim"));
                 account.setActive(true);
                 account.setOwner(messageReceivedEvent.getAuthor().getName());
-                account.setId(userId);
+                account.setId(UUID.randomUUID().toString());
 
                 String[] line = {account.getPlataform(),
                         account.getUsername(),
@@ -116,8 +118,7 @@ public class AccountService {
                         .addField("Nome de usuario:", account.getUsername(), true)
                         .addField("Senha: ", account.getPassword(), true)
                         .addField("MFA: ", account.getMfa().toString(), true)
-                        .setFooter("Caso encontre algum problema chama nois")
-                        .setTimestamp(Instant.now())
+                        .setFooter("ID: " + account.getId())
                         .build();
 
                 messageReceivedEvent.getChannel().sendMessageEmbeds(messageEmbed).queue();
@@ -140,8 +141,7 @@ public class AccountService {
                         .addField("Nome de usuario:", line[1], true)
                         .addField("Senha: ", line[2], true)
                         .addField("MFA: ", line[3], true)
-                        .setFooter("Caso encontre algum problema chama nois")
-                        .setTimestamp(Instant.now())
+                        .setFooter("ID: " + line[7])
                         .build();
 
                 messageReceivedEvent.getChannel().sendMessageEmbeds(messageEmbed).queue();

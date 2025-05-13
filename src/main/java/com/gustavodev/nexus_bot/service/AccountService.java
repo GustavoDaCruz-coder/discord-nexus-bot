@@ -1,10 +1,10 @@
 package com.gustavodev.nexus_bot.service;
 
 import com.gustavodev.nexus_bot.model.Account;
+import com.gustavodev.nexus_bot.util.AccountUtil;
 import com.gustavodev.nexus_bot.util.Constants;
 import com.gustavodev.nexus_bot.util.MessageUtil;
 import com.gustavodev.nexus_bot.util.StatusByRegistration;
-import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -13,13 +13,8 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.io.FileReader;
 import java.io.FileWriter;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static com.gustavodev.nexus_bot.util.Constants.TITLE_ACCOUNT_MESSAGE;
 import static com.gustavodev.nexus_bot.util.StatusByRegistration.*;
@@ -40,8 +35,8 @@ public class AccountService {
             case "listar":
                 findAccount(messageReceivedEvent);
                 break;
-            case "desativar":
-                deleteAccount(messageReceivedEvent);
+            case "deletar":
+                deleteAccount(fullMessage, messageReceivedEvent);
                 break;
             case "atualizar":
                 updateAccount(fullMessage, messageReceivedEvent);
@@ -126,31 +121,51 @@ public class AccountService {
         }
     }
 
-
-    @SneakyThrows
     public void findAccount(MessageReceivedEvent messageReceivedEvent) {
-        CSVReader csvReader = new CSVReader(new FileReader(Constants.DATA_DIRECTORY));
-        String[] line;
+        List<Account> accounts = AccountUtil.readData();
 
-        while ((line = csvReader.readNext()) != null) {
-            if (Boolean.parseBoolean(line[6])) {
-                MessageEmbed messageEmbed = new EmbedBuilder()
-                        .setTitle("CONTA")
-                        .setDescription(line[5])
-                        .addField("Plataforma: ", line[0], false)
-                        .addField("Nome de usuario:", line[1], true)
-                        .addField("Senha: ", line[2], true)
-                        .addField("MFA: ", line[3], true)
-                        .setFooter("ID: " + line[7])
-                        .build();
-
-                messageReceivedEvent.getChannel().sendMessageEmbeds(messageEmbed).queue();
-            }
+        if (accounts.isEmpty()) {
+            messageReceivedEvent.getChannel().sendMessage("Nenhuma conta encontrada!").queue();
+            return;
         }
+
+        accounts.forEach(account -> {
+            MessageEmbed messageEmbed = new EmbedBuilder()
+                    .setTitle("CONTA")
+                    .setDescription(account.getDescription())
+                    .addField("Plataforma: ", account.getPlataform(), false)
+                    .addField("Nome de usuario:", account.getUsername(), true)
+                    .addField("Senha: ", account.getPassword(), true)
+                    .addField("MFA: ", account.getMfa().toString(), true)
+                    .setFooter("ID: " + account.getId())
+                    .build();
+
+            messageReceivedEvent.getChannel().sendMessageEmbeds(messageEmbed).queue();
+        });
     }
 
-    public void deleteAccount(MessageReceivedEvent messageReceivedEvent) {
-        messageReceivedEvent.getChannel().sendMessage("Excluindo com sucesso!").queue();
+    @SneakyThrows
+    public void deleteAccount(String fullMessage, MessageReceivedEvent messageReceivedEvent) {
+        List<Account> accounts = AccountUtil.readData();
+        CSVWriter csvWriter = new CSVWriter(new FileWriter(Constants.DATA_DIRECTORY));
+
+        String accountId = AccountUtil.getTextByIndex(fullMessage, 2);
+
+        accounts.removeIf(account -> accountId.equals(account.getId()));
+
+        for (Account account : accounts) {
+            String[] accountUpdated = new String[]{account.getPlataform(),
+                    account.getUsername(),
+                    account.getPassword(),
+                    account.getMfa().toString(),
+                    account.getOwner(),
+                    account.getDescription(),
+                    account.getActive().toString(),
+                    account.getId()};
+
+            csvWriter.writeNext(accountUpdated);
+        }
+        csvWriter.close();
     }
 
     public void updateAccount(String fullMessage, MessageReceivedEvent messageReceivedEvent) {

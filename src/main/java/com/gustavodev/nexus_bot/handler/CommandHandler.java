@@ -3,6 +3,7 @@ package com.gustavodev.nexus_bot.handler;
 import com.gustavodev.nexus_bot.service.AccountService;
 import com.gustavodev.nexus_bot.service.ServerService;
 import com.gustavodev.nexus_bot.util.MessageUtil;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class CommandHandler {
@@ -18,6 +19,8 @@ public class CommandHandler {
     public void handle(MessageReceivedEvent messageReceivedEvent) {
         var fullMessage = messageReceivedEvent.getMessage().getContentRaw();
         var command = MessageUtil.getCommandFromMessage(fullMessage);
+
+        messageReceivedEvent.getChannel().addReactionById(messageReceivedEvent.getMessageId(), Emoji.fromUnicode("\uD83D\uDC4D")).queue();
 
         switch (command) {
             case "conta":
